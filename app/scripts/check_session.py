@@ -47,50 +47,60 @@ async def check_session() -> dict:
 
     if is_valid:
         # Retrieve the user record from the database if matching
-        full_name = "Alex"
-        email_address = "alex@apex.com"
-        mobile_number = "555-0199"
+        full_name = None
+        email_address = None
+        mobile_number = None
+        found_user = False
         
-        linked_org = None
         user_records = ctx.list(scope="platform", collection_name="registered_users")
         for user in user_records:
             if user.get("email_address") == user_id or user.get("full_name") == user_id:
                 full_name = user.get("full_name")
                 email_address = user.get("email_address")
                 mobile_number = user.get("mobile_number")
+                found_user = True
                 break
-        
-        def normalize_phone(num: str) -> str:
-            """
-            Helper to normalize formatting by extracting digits and stripping country codes.
-            """
-            clean = "".join(filter(str.isdigit, num))
-            if (len(clean) == 11 or len(clean) == 8) and clean.startswith("1"):
-                clean = clean[1:]
-            return clean
-        
-        clean_mobile = normalize_phone(mobile_number)
-        linked_orgs = []
-        leads = ctx.list(scope="platform", collection_name="leads")
-        for lead in leads:
-            db_num = normalize_phone(lead.get("contact_mobile") or "")
-            if db_num == clean_mobile or (lead.get("contact_email") and lead.get("contact_email") == email_address):
-                linked_orgs.append({
-                    "org_name": lead.get("org_name"),
-                    "status": lead.get("status")
-                })
-        
-        primary_org = linked_orgs[0] if linked_orgs else None
-        return {
-            "session_valid": True,
-            "user_data": {
-                "full_name": full_name,
-                "email_address": email_address,
-                "mobile_number": mobile_number,
-                "linked_organization": primary_org,
-                "linked_organizations": linked_orgs
+                
+        # If no user matches but mock_session override is active, fall back to the first registered user (usually initialized to Alex Doe)
+        if not found_user and mock_session == True:
+            if user_records:
+                full_name = user_records[0].get("full_name")
+                email_address = user_records[0].get("email_address")
+                mobile_number = user_records[0].get("mobile_number")
+                found_user = True
+                
+        if found_user:
+            def normalize_phone(num: str) -> str:
+                """
+                Helper to normalize formatting by extracting digits and stripping country codes.
+                """
+                clean = "".join(filter(str.isdigit, num))
+                if (len(clean) == 11 or len(clean) == 8) and clean.startswith("1"):
+                    clean = clean[1:]
+                return clean
+            
+            clean_mobile = normalize_phone(mobile_number)
+            linked_orgs = []
+            leads = ctx.list(scope="platform", collection_name="leads")
+            for lead in leads:
+                db_num = normalize_phone(lead.get("contact_mobile") or "")
+                if db_num == clean_mobile or (lead.get("contact_email") and lead.get("contact_email") == email_address):
+                    linked_orgs.append({
+                        "org_name": lead.get("org_name"),
+                        "status": lead.get("status")
+                    })
+            
+            primary_org = linked_orgs[0] if linked_orgs else None
+            return {
+                "session_valid": True,
+                "user_data": {
+                    "full_name": full_name,
+                    "email_address": email_address,
+                    "mobile_number": mobile_number,
+                    "linked_organization": primary_org,
+                    "linked_organizations": linked_orgs
+                }
             }
-        }
         
     return {
         "session_valid": False
