@@ -312,3 +312,12 @@ async def test_verify_otp_invalid_phone() -> None:
         res = await verify_mobile_otp("12345", "123456")
         assert res["valid"] is False
         assert "Invalid mobile number format" in res["message"]
+
+@pytest.mark.asyncio
+async def test_save_org_details_render_form() -> None:
+    ctx = RemoteContext(user_id="guest_user")
+    ctx.show_widget = MagicMock()
+    with context_session(ctx):
+        res = await save_org_details()
+        assert res["status"] == "needs_input"
+        ctx.show_widget.assert_called_once_with("org_details_form")

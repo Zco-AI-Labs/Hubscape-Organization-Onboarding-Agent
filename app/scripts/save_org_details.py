@@ -6,14 +6,15 @@ from app.core.hubscape_adk import get_context, require_tool_privilege
 
 @require_tool_privilege
 async def save_org_details(
-    org_name: str,
-    org_description: str,
-    org_email: str,
-    org_phone: str,
-    user_position: str
+    org_name: str = "",
+    org_description: str = "",
+    org_email: str = "",
+    org_phone: str = "",
+    user_position: str = ""
 ) -> dict:
     """
     Saves the organization onboarding details with status set to UNVERIFIED in the local JSON mock database.
+    If details are missing, renders the organization details form widget.
 
     Args:
         org_name: Legal name of the organization.
@@ -22,6 +23,20 @@ async def save_org_details(
         org_phone: Contact phone number for the organization.
         user_position: Position or title of the user onboarding the organization.
     """
+    if not all([org_name, org_description, org_email, org_phone, user_position]):
+        ctx = get_context()
+        try:
+            ctx.show_widget("org_details_form")
+            return {
+                "status": "needs_input",
+                "message": "Organization details form widget displayed. Please fill it out."
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Failed to render organization details form widget: {str(e)}"
+            }
+
     import re
     email_pattern = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
     if not re.match(email_pattern, org_email.strip()):
