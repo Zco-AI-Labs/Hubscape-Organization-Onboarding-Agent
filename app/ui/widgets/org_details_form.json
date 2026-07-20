@@ -46,16 +46,12 @@
       }
     },
     {
-      "type": "select",
+      "type": "input",
       "props": {
         "name": "user_position",
         "label": "Your Position/Title in Organization",
-        "options": [
-          {"label": "President", "value": "President"},
-          {"label": "CEO", "value": "CEO"},
-          {"label": "CFO", "value": "CFO"},
-          {"label": "IT Manager", "value": "IT Manager"}
-        ],
+        "placeholder": "e.g. President, CEO, Owner",
+        "inputType": "text",
         "required": true
       }
     },
