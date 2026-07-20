@@ -26,11 +26,6 @@ async def send_mobile_otp(mobile_number: str) -> dict:
             "message": res.get("message") or "Failed to send verification code."
         }
         
-    try:
-        ctx.show_widget("otp_verify_widget")
-    except Exception:
-        pass
-
     return {
         "status": "success",
         "message": f"6-digit verification code successfully sent to mobile number {mobile_number}."
