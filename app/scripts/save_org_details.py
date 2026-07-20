@@ -66,13 +66,21 @@ async def save_org_details(
         "contact_mobile": None,
         "contact_name": None
     }
-    
     ctx.save(
         scope="platform",
         collection_name="leads",
         doc_id=org_id,
         data=lead_data
     )
+
+    # Check if there is an active session
+    from app.scripts.check_session import check_session
+    try:
+        session_res = await check_session()
+        if not session_res.get("session_valid", False):
+            ctx.show_widget("mobile_input_widget")
+    except Exception:
+        pass
         
     return {
         "status": "success",

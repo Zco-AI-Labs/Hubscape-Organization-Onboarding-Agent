@@ -55,6 +55,11 @@ async def check_mobile_exist(mobile_number: str) -> dict:
             "linked_organizations": linked_orgs
         }
         
+    try:
+        ctx.show_widget("personal_details_widget")
+    except Exception:
+        pass
+
     return {
         "exists": False
     }

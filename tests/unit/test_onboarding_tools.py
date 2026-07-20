@@ -321,3 +321,36 @@ async def test_save_org_details_render_form() -> None:
         res = await save_org_details()
         assert res["status"] == "needs_input"
         ctx.show_widget.assert_called_once_with("org_details_form")
+
+@pytest.mark.asyncio
+async def test_save_org_details_transitions_to_mobile_widget() -> None:
+    ctx = RemoteContext(user_id="guest_user")
+    ctx.show_widget = MagicMock()
+    with context_session(ctx):
+        res = await save_org_details(
+            org_name="Apex Innovations",
+            org_description="Robotic research",
+            org_email="info@apex.com",
+            org_phone="555-019-9000",
+            user_position="CEO"
+        )
+        assert res["status"] == "success"
+        ctx.show_widget.assert_called_once_with("mobile_input_widget")
+
+@pytest.mark.asyncio
+async def test_check_mobile_exist_transitions_to_personal_details() -> None:
+    ctx = RemoteContext(user_id="guest_user")
+    ctx.show_widget = MagicMock()
+    with context_session(ctx):
+        res = await check_mobile_exist("555-9999")
+        assert res["exists"] is False
+        ctx.show_widget.assert_called_once_with("personal_details_widget")
+
+@pytest.mark.asyncio
+async def test_send_mobile_otp_transitions_to_otp_widget() -> None:
+    ctx = RemoteContext(user_id="guest_user")
+    ctx.show_widget = MagicMock()
+    with context_session(ctx):
+        res = await send_mobile_otp("555-0199")
+        assert res["status"] == "success"
+        ctx.show_widget.assert_called_once_with("otp_verify_widget")
